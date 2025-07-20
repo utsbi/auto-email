@@ -11,7 +11,7 @@ from datetime import datetime
 #--- CONFIG ---
 GOOGLE_SHEET_NAME = "SBI General Interest Form (Responses)"
 SERVICE_ACCOUNT_FILE = "credentials.json"
-LOGO_FILE = "logo.png"
+LOGO_FILE = "EmailSignature.gif"
 
 #--- Email Config ---
 SENDER_EMAIL = os.getenv('EMAIL_USER')
@@ -32,7 +32,7 @@ def get_new_signups():
         df = pd.DataFrame(records)
         
         # Filter for rows where "Automated Email sent" is empty
-        new_signups_df = df[df['Automated Email Sent'] == ''].copy()
+        new_signups_df = df[df["Automated Email Sent"] == ''].copy()
         
         # Add the original row index to update the correct cell later
         new_signups_df ["original_row_index"] = new_signups_df.index + 2
@@ -48,7 +48,7 @@ def get_new_signups():
     
 def send_welcome_email(recipient_name, recipient_email, departments_str):
     if not SENDER_EMAIL or not SENDER_PASSWORD:
-        print("Error: Email credentials (EMAIL_USER, EMAIL_APP_PASSWORD) are not set as environment variables.")
+        print("Error: Email credentials are not set as environment variables.")
         return False
     
     message = MIMEMultipart("related")
@@ -112,4 +112,80 @@ def send_welcome_email(recipient_name, recipient_email, departments_str):
     </body>
     </html>
     """
+
+    # Attach HTML to root message
+    message.attach(MIMEText(html, "html"))
+    
+    try:
+        with open(LOGO_FILE, "rb") as f:
+            img = MIMEImage(f.read())
+            img.add_header("Content-ID", "<logoImage>")
+            img.add_header("Content-Disposition", "inline", filename=LOGO_FILE)
+            message.attach(img)
+    
+    except FileNotFoundError:
+        print(f"Error: Logo file '{LOGO_FILE}' not found.")
+        return False
+
+    # Send Email
+    try:
+        context = ssl.create_default_context()
+        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+            server.starttls(context=context)
+            server.login(SENDER_EMAIL, SENDER_PASSWORD)
+            server.sendmail(SENDER_EMAIL, recipient_email, message.as_string())
+            print(f"Successfully sent email to {recipient_name} at {recipient_email}.")
+            return True
+    
+    except Exception as e:
+        print(f"Failed to send email to {recipient_name}. Error: {e}")
+        return False
+    
+def main():
+    print(f"Script started at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    worksheet, new_signups = get_new_signups()
+    
+    if worksheet is None or new_signups.empty:
+        print("No new signups to process.")
+        return
+    
+    # Get the exact column headers from DataFrame
+    name_col = "What is your name?"
+    email_col = "What is your email?"
+    dept_col = "Which department(s) do you want to be in? (Pick up to 2)"
+    sent_col_name = "Automated Email Sent"
+    
+    # Find the column index
+    try:
+        sent_col_cell = worksheet.find(sent_col_name)
+        if sent_col_cell is None:
+            print(f"Error: Column '{sent_col_name}' not found in the worksheet.")
+            return
+        sent_col_index = sent_col_cell.col
+    
+    except Exception as e:
+        print(f"Error finding column '{sent_col_name}': {e}")
+        return
+    
+    for _, row in new_signups.iterrows():
+        name = row[name_col]
+        email = row[email_col]
+        depts = row[dept_col]
+        original_row_index = row["original_row_index"]
+        
+        print(f"\nProcessing row {original_row_index}: {name}")
+        
+        email_sent = send_welcome_email(name, email, depts)
+        
+        if email_sent:
+            try:
+                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                worksheet.update_cell(original_row_index, sent_col_index, f"Yes - {timestamp}")
+                print(f"Updated sheet for {name}.")
+                
+            except Exception as e:
+                print(f"Failed to update sheet for {name}. Error: {e}")
+                
+if __name__ == "__main__":
+    main()        
     

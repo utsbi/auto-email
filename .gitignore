@@ -62,6 +62,9 @@ target/
 # Google Service Account Data
 credentials.json
 
+# Email Signature
+EmailSignature.gif
+
 # Database
 *.db
 *.rdb
