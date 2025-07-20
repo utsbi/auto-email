@@ -50,7 +50,7 @@ jobs:
               --region=$REGION \
               --task-timeout=1800 \
               --memory=1Gi \
-              --cpu=1
+              --cpu=1 \
               --set-env-vars=GOOGLE_CLOUD_PROJECT=$PROJECT_ID
           else
             echo "Creating new job..."
@@ -59,7 +59,7 @@ jobs:
               --region=$REGION \
               --task-timeout=1800 \
               --memory=1Gi \
-              --cpu=1
+              --cpu=1 \
               --set-env-vars=GOOGLE_CLOUD_PROJECT=$PROJECT_ID
           fi
 
