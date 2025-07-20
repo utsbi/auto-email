@@ -238,12 +238,15 @@ python main.py
 ### Project Structure
 
 ```
-├── main.py                 # Main application logic
-├── pyproject.toml         # Python dependencies
-├── Dockerfile             # Container configuration
 ├── .github/workflows/     # CI/CD pipeline
 ├── .gitignore            # Version control exclusions
-└── README.md             # This file
+├── .python-version        # Version of python used
+├── Dockerfile             # Container configuration
+├── EmailSignature.gif     # Logo gif email signature
+├── README.md              # This file
+├── main.py                 # Main application logic
+├── pyproject.toml         # Python dependencies
+└── uv.lock                # Lockfile for reproducible builds
 ```
 
 ## 🐛 Troubleshooting
