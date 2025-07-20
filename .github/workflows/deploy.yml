@@ -42,7 +42,7 @@ jobs:
 
       - name: Deploy to Cloud Run Job
         run: |
-          export CUSTOM_SA="email-automation-sbi@cool-ship-466508-j1.iam.gserviceaccount.com" /
+          export CUSTOM_SA="email-automation-sbi@cool-ship-466508-j1.iam.gserviceaccount.com"
           # Check if job exists
           if gcloud run jobs describe $JOB_NAME --region=$REGION &>/dev/null; then
             echo "Updating existing job..."
