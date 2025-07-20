@@ -3,6 +3,8 @@ import ssl
 import os
 import pandas as pd
 import gspread
+import json
+from google.cloud import secretmanager
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.image import MIMEImage
@@ -13,16 +15,35 @@ GOOGLE_SHEET_NAME = "SBI General Interest Form (Responses)"
 SERVICE_ACCOUNT_FILE = "credentials.json"
 LOGO_FILE = "EmailSignature.gif"
 
+
+def get_secret(secret_id):
+    """Retrieve a secret from Google Secret Manager."""
+    client = secretmanager.SecretManagerServiceClient()
+    project_id = os.environ.get('GOOGLE_CLOUD_PROJECT')
+    name = f"projects/{project_id}/secrets/{secret_id}/versions/latest"
+    response = client.access_secret_version(request={"name": name})
+    return response.payload.data.decode("UTF-8")
+
+
 #--- Email Config ---
-SENDER_EMAIL = os.getenv('EMAIL_USER')
-SENDER_PASSWORD = os.getenv('GOOGLE_PASS')
+SENDER_EMAIL = get_secret("sender-email")
+SENDER_PASSWORD = get_secret("google-app-password")
 SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 587
 
+
 def get_new_signups():
     try:
-        # Authenticate using the service account
-        gc = gspread.service_account(filename=SERVICE_ACCOUNT_FILE)
+        # Get credentials from Secret Manager
+        credentials_json = get_secret("sheets-credentials")
+        credentials_dict = json.loads(credentials_json)
+        
+        # Create temporary file for gspread
+        with open('/tmp/credentials.json', 'w') as f:
+            json.dump(credentials_dict, f)
+        
+        # Use the temporary credentials file
+        gc = gspread.service_account(filename='/tmp/credentials.json')
         
         # Open the spreadsheet and the first worksheet
         sh = gc.open(GOOGLE_SHEET_NAME).sheet1
@@ -46,7 +67,8 @@ def get_new_signups():
     except Exception as e:
         print(f"An error occurred while fetching data: {e}")
         return None, pd.DataFrame()
-    
+
+
 def send_welcome_email(recipient_name, recipient_email, departments_str):
     if not SENDER_EMAIL or not SENDER_PASSWORD:
         print("Error: Email credentials are not set as environment variables.")
