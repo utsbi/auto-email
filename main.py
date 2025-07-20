@@ -52,7 +52,11 @@ def get_new_signups():
         
         # Get all records from the sheet and convert to a pandas DataFrame
         records = sh.get_all_records()
+        print(f"Total records found: {len(records)}")
+        
         df = pd.DataFrame(records)
+        print(f"DataFrame shape: {df.shape}")
+        print(f"Column names: {df.columns.tolist()}")
         
         # Filter for rows where "Automated Email sent" is empty
         new_signups_df = df[df["Automated Email Sent"] == ''].copy()
