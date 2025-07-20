@@ -12,7 +12,6 @@ from datetime import datetime
 
 #--- CONFIG ---
 GOOGLE_SHEET_NAME = "SBI General Interest Form (Responses)"
-SERVICE_ACCOUNT_FILE = "credentials.json"
 LOGO_FILE = "EmailSignature.gif"
 SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 587
@@ -38,7 +37,7 @@ def get_new_signups():
     """Retrieve new signups on Google Sheets Database."""
     try:
         # Get credentials from Secret Manager
-        credentials_json = get_secret("sheets-credentials")
+        credentials_json = get_secret("SERVICE_ACCOUNT_FILE")
         credentials_dict = json.loads(credentials_json)
         
         # Create temporary file for gspread
