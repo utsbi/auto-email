@@ -62,9 +62,6 @@ target/
 # Google Service Account Data
 credentials.json
 
-# Email Signature
-EmailSignature.gif
-
 # Test Script
 test_main.py
 
