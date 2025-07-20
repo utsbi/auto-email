@@ -65,6 +65,9 @@ credentials.json
 # Email Signature
 EmailSignature.gif
 
+# Test Script
+test_main.py
+
 # Database
 *.db
 *.rdb

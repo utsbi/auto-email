@@ -76,54 +76,81 @@ def send_welcome_email(recipient_name, recipient_email, departments_str):
         }
 
         # Split the comma-separated departments string into a list
-        departments_list = [dep.strip() for dep in departments_str.split(',')]
+        departments_list = [dep.strip() for dep in departments_str.split(',') if dep.strip()]
         
         # Generate the HTML for the department selections
-        departments_html = '<br>'.join([
-            f"<strong>{dep}</strong>: {department_info.get(dep, 'We\'ll be in touch soon with more information!')}"
-            for dep in departments_list
-        ])
+        departments_html = ''
+        for dep in departments_list:
+            if dep in department_info:
+                departments_html += f"<strong>{dep}:</strong> {department_info[dep]}<br><br>"
+            else:
+                print(f"Warning: Unknown department '{dep}'")
+                departments_html += f"<strong>{dep}:</strong> Department information not available.<br><br>"
         
-        # Create the HTML content for the email
-        html = f"""
-        <html>
-        <body>
-            <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333333; line-height: 1.5; max-width: 600px;">
-            <p>Hello {recipient_name},</p>
-            <p>Thank you so much for completing our form and for your interest in joining Sustainable Building Initiative!</p>
-            <p>We wanted to give you a quick update on what happens next:</p>
-            <p>
-                <b>Your Department Selections:</b><br>
+        # Create the HTML email content
+        html_content = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Next Steps With SBI!</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif;">
+    <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333333; line-height: 1.6; max-width: 600px; margin: 0 auto; padding: 20px;">
+        
+        <p style="margin-bottom: 16px;">Hello {recipient_name},</p>
+        
+        <p style="margin-bottom: 16px;">Thank you so much for completing our form and for your interest in joining Sustainable Building Initiative!</p>
+        
+        <p style="margin-bottom: 16px;">We wanted to give you a quick update on what happens next:</p>
+        
+        <div style="margin-bottom: 20px;">
+            <p style="margin-bottom: 8px;"><strong>Your Department Selections:</strong></p>
+            <div style="margin-left: 20px; margin-bottom: 16px;">
                 {departments_html}
-            </p>
-            <p>
-                <b>What to Expect Next:</b><br>
-                Our team will review your responses and reach out to you with more details about each department you’ve selected. You’ll also receive updates about opportunities, events, and important information for the upcoming semester.
-            </p>
-            <p>If you have any questions, feel free to reply to this email or contact our President at <a href="mailto:px.guzman@utexas.edu">px.guzman@utexas.edu</a>.</p>
-            <p>Stay tuned—we’re excited to connect with you soon!</p>
-            <p>
-                <b>Best regards,</b><br>
-                The Sustainable Building Initiative Team
-            </p>
-            <div style="margin-top: 20px;">
-                <img src="cid:logoImage" style="width: 120px;" /><br>
-                Website: <a href="http://utsbi.org" target="_blank">utsbi.org</a>
             </div>
-            </div>
-        </body>
-        </html>
-        """
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+            <p style="margin-bottom: 8px;"><strong>What to Expect Next:</strong></p>
+            <p style="margin-left: 20px; margin-bottom: 16px;">
+                Our team will review your responses and reach out to you with more details about each department you've selected. You'll also receive updates about opportunities, events, and important information for the upcoming semester.
+            </p>
+        </div>
+        
+        <p style="margin-bottom: 16px;">If you have any questions, feel free to reply to this email or contact our President at <a href="mailto:px.guzman@utexas.edu" style="color: #0066cc; text-decoration: none;">px.guzman@utexas.edu</a>.</p>
+        
+        <p style="margin-bottom: 16px;">Stay tuned—we're excited to connect with you soon!</p>
+        
+        <p style="margin-bottom: 20px;">
+            <strong>Best regards,</strong><br>
+            The Sustainable Building Initiative Team
+        </p>
+        
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e0e0e0;">
+            <img src="cid:logo" alt="SBI Logo" style="max-width: 120px; height: auto; display: block; margin-bottom: 10px;" />
+            <p style="margin: 0; font-size: 12px; color: #666666;">
+                Website: <a href="https://utsbi.org" target="_blank" style="color: #0066cc; text-decoration: none;">utsbi.org</a>
+            </p>
+        </div>
+        
+    </div>
+</body>
+</html>
+"""
 
-        # Attach HTML to root message
-        message.attach(MIMEText(html, "html"))
+        # Create HTML part
+        html_part = MIMEText(html_content, "html")
+        message.attach(html_part)
         
         # Optional: Add logo if file exists
         if os.path.exists(LOGO_FILE):
             with open(LOGO_FILE, "rb") as f:
                 logo_data = f.read()
+                from email.mime.image import MIMEImage
                 logo = MIMEImage(logo_data)
-                logo.add_header("Content-ID", "<logo>")
+                logo.add_header("Content-ID", "<logo>")  # Matches cid:logo in HTML
                 message.attach(logo)
                 
         # Create SMTP session and send email
