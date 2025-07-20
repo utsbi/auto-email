@@ -14,6 +14,8 @@ from datetime import datetime
 GOOGLE_SHEET_NAME = "SBI General Interest Form (Responses)"
 SERVICE_ACCOUNT_FILE = "credentials.json"
 LOGO_FILE = "EmailSignature.gif"
+SMTP_SERVER = "smtp.gmail.com"
+SMTP_PORT = 587
 
 
 def get_secret(secret_id):
@@ -25,11 +27,11 @@ def get_secret(secret_id):
     return response.payload.data.decode("UTF-8")
 
 
-#--- Email Config ---
-SENDER_EMAIL = get_secret("sender-email")
-SENDER_PASSWORD = get_secret("google-app-password")
-SMTP_SERVER = "smtp.gmail.com"
-SMTP_PORT = 587
+def get_email_credentials():
+    """Get email credentials from Secret Manager."""
+    sender_email = get_secret("EMAIL_USER")
+    sender_password = get_secret("GOOGLE_PASS")
+    return sender_email, sender_password
 
 
 def get_new_signups():
@@ -72,14 +74,16 @@ def get_new_signups():
 
 def send_welcome_email(recipient_name, recipient_email, departments_str):
     """Create custom email body based on user input."""
-    if not SENDER_EMAIL or not SENDER_PASSWORD:
-        print("Error: Email credentials are not set as environment variables.")
+    try:
+        sender_email, sender_password = get_email_credentials()
+    except Exception as e:
+        print(f"Error: Could not retrieve email credentials: {e}")
         return False
     
     try:
         message = MIMEMultipart("related")
         message["Subject"] = "Next Steps With SBI!"
-        message["From"] = SENDER_EMAIL
+        message["From"] = sender_email
         message["To"] = recipient_email
         
         # Department descriptions
@@ -181,8 +185,8 @@ def send_welcome_email(recipient_name, recipient_email, departments_str):
         context = ssl.create_default_context()
         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
             server.starttls(context=context)
-            server.login(SENDER_EMAIL, SENDER_PASSWORD)
-            server.send_message(message)
+            server.login(sender_email, sender_password)
+            server.sendmail(sender_email, recipient_email, message.as_string())
                 
         print(f"Email sent successfully to {recipient_email}")
         return True
