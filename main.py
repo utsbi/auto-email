@@ -19,7 +19,7 @@ LOGO_FILE = "EmailSignature.gif"
 def get_secret(secret_id):
     """Retrieve a secret from Google Secret Manager."""
     client = secretmanager.SecretManagerServiceClient()
-    project_id = os.environ.get('GOOGLE_CLOUD_PROJECT')
+    project_id = os.environ.get('GOOGLE_CLOUD_PROJECT') or 'YOUR_ACTUAL_PROJECT_ID'
     name = f"projects/{project_id}/secrets/{secret_id}/versions/latest"
     response = client.access_secret_version(request={"name": name})
     return response.payload.data.decode("UTF-8")
@@ -33,6 +33,7 @@ SMTP_PORT = 587
 
 
 def get_new_signups():
+    """Retrieve new signups on Google Sheets Database."""
     try:
         # Get credentials from Secret Manager
         credentials_json = get_secret("sheets-credentials")
@@ -70,6 +71,7 @@ def get_new_signups():
 
 
 def send_welcome_email(recipient_name, recipient_email, departments_str):
+    """Create custom email body based on user input."""
     if not SENDER_EMAIL or not SENDER_PASSWORD:
         print("Error: Email credentials are not set as environment variables.")
         return False
@@ -191,6 +193,7 @@ def send_welcome_email(recipient_name, recipient_email, departments_str):
 
 
 def update_email_sent_status(sheet, row_index):
+    """Updates Google Sheets to mark if sent."""
     try:
         # Find the column index for "Automated Email Sent"
         headers = sheet.row_values(1)
