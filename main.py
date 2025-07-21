@@ -27,7 +27,7 @@ def get_secret(secret_id):
 
 
 def get_email_credentials():
-    """Get email credentials from Secret Manager."""
+    """Retrieve email credentials from Secret Manager."""
     sender_email = get_secret("EMAIL_USER")
     sender_password = get_secret("GOOGLE_PASS")
     return sender_email, sender_password
@@ -40,14 +40,13 @@ def get_new_signups():
         credentials_json = get_secret("SERVICE_ACCOUNT_FILE")
         credentials_dict = json.loads(credentials_json)
         
-        # Create temporary file for gspread
+        # Create temporary file
         with open('/tmp/credentials.json', 'w') as f:
             json.dump(credentials_dict, f)
         
-        # Use the temporary credentials file
         gc = gspread.service_account(filename='/tmp/credentials.json')
         
-        # Open the spreadsheet and the first worksheet
+        # Open the spreadsheet
         sh = gc.open(GOOGLE_SHEET_NAME).sheet1
         
         # Get all records from the sheet and convert to a pandas DataFrame
@@ -106,7 +105,6 @@ def send_welcome_email(recipient_name, recipient_email, departments_str):
             'Legal': 'Manages contracts, ensures regulatory compliance, handles permitting, and oversees all legal aspects of the project.',
         }
 
-        # Split the comma-separated departments string into a list
         departments_list = [dep.strip() for dep in departments_str.split(',') if dep.strip()]
         
         # Generate the HTML for the department selections
@@ -118,7 +116,7 @@ def send_welcome_email(recipient_name, recipient_email, departments_str):
                 print(f"Warning: Unknown department '{dep}'")
                 departments_html += f"<strong>{dep}:</strong> Department information not available.<br><br>"
         
-        # Create the HTML email content
+        # The HTML email content
         html_content = f"""
 <!DOCTYPE html>
 <html>
@@ -171,11 +169,10 @@ def send_welcome_email(recipient_name, recipient_email, departments_str):
 </html>
 """
 
-        # Create HTML part
         html_part = MIMEText(html_content, "html")
         message.attach(html_part)
         
-        # Optional: Add logo if file exists
+        # Add logo if file exists
         if os.path.exists(LOGO_FILE):
             with open(LOGO_FILE, "rb") as f:
                 logo_data = f.read()
@@ -200,7 +197,7 @@ def send_welcome_email(recipient_name, recipient_email, departments_str):
 
 
 def update_email_sent_status(sheet, row_index):
-    """Updates Google Sheets to mark if sent."""
+    """Updates Google Sheets to mark sent."""
     try:
         # Find the column index for "Automated Email Sent"
         headers = sheet.row_values(1)
