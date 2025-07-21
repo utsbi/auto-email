@@ -235,6 +235,9 @@ def main():
             continue
         
         print(f"Processing: {name} ({email})")
+        
+        # Capitalize name of person
+        name = name.title()
 
         # Send email
         if send_welcome_email(name, email, departments):
