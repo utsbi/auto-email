@@ -228,7 +228,7 @@ def main():
         name = row.get("What is your name?", "")
         email = row.get("What is your email?", "")
         departments = row.get("Which department(s) do you want to be in? (Pick up to 2)", "")
-        original_row = row.get("original_row_index")
+        original_row = row.get("original_row_index", index + 2)
 
         if not email or not name:
             print(f"Skipping row {original_row}: missing name or email")
