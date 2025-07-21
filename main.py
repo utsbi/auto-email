@@ -62,9 +62,6 @@ def get_new_signups():
         # Filter for rows where "Automated Email sent" is empty
         new_signups_df = df[df["Automated Email Sent"] == ''].copy()
         
-        # Add the original row index to update the correct cell later
-        new_signups_df = new_signups_df.reset_index()
-        new_signups_df ["original_row_index"] = new_signups_df.index + 2
         return sh, new_signups_df
     
     except gspread.exceptions.SpreadsheetNotFound:
