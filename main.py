@@ -57,6 +57,8 @@ def get_new_signups():
         print(f"DataFrame shape: {df.shape}")
         print(f"Column names: {df.columns.tolist()}")
         
+        df['original_row_index'] = df.index + 2
+        
         # Filter for rows where "Automated Email sent" is empty
         new_signups_df = df[df["Automated Email Sent"] == ''].copy()
         
@@ -228,7 +230,7 @@ def main():
         name = row.get("What is your name?", "")
         email = row.get("What is your email?", "")
         departments = row.get("Which department(s) do you want to be in? (Pick up to 2)", "")
-        original_row = row.get("original_row_index", index + 2)
+        original_row = row.get("original_row_index")
 
         if not email or not name:
             print(f"Skipping row {original_row}: missing name or email")
