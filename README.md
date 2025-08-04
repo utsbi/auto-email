@@ -312,9 +312,3 @@ This project is internal to the company. All rights reserved.
 
 **⚠️ Important**: This system handles email automation and personal data. Ensure compliance with privacy regulations and company policies when making modifications.
 
-[1] programming.version_control
-[2] programming.automation
-[3] programming.cloud_integration
-[4] programming.security_practices
-[5] programming.python
-[6] programming.cloud_computing
